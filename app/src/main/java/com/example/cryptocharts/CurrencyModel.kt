@@ -1,26 +1,19 @@
 package com.example.cryptocharts
 
-class CurrencyModel {
-    var name: String = ""
-    var price: String = ""
-    var isFavorited: Boolean = false
+class CurrencyModel (name: String, price: Double ?= 0.0, isFavorited: Boolean) {
+    var name: String ?= ""
+    var price: Double ?= 0.0
+    var isFavorited: Boolean ?= false
+    val startIndexOfBracket = name.indexOf('(')
+    val endIndexOfBracket = name.length
+    val symbol = name.substring(startIndexOfBracket + 1, endIndexOfBracket - 1)
 
-    fun Item(name: String, price: String, isFavorited: Boolean) {
+    init {
         this.name = name
         this.price = price
         this.isFavorited = isFavorited
+
     }
 
-    fun getCurrencyName(): String {
-        return name
-    }
-
-    fun getCurrencyPrice(): String {
-        return price
-    }
-
-    fun getIsFavorited(): Boolean {
-        return isFavorited
-    }
 
 }

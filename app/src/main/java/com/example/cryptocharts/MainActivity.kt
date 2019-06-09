@@ -2,6 +2,7 @@ package com.example.cryptocharts
 
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.os.PersistableBundle
 import android.support.v7.widget.DefaultItemAnimator
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
@@ -17,6 +18,7 @@ import android.widget.TextView
 import android.widget.Toast
 import com.example.cryptocharts.dto.CurrencyList
 import com.example.cryptocharts.dto.CurrencyNameDTO
+import com.example.cryptocharts.dto.CurrencyValue
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import kotlinx.android.synthetic.main.activity_main.*
@@ -26,99 +28,86 @@ import retrofit2.Response
 import java.util.*
 import retrofit2.adapter.rxjava2.Result.response
 import com.google.gson.GsonBuilder
+import java.io.IOException
 
-
+public var allCurrencies = ArrayList<CurrencyModel>()
+val CURRENCYTYPE = "CAD"
 
 class MainActivity : AppCompatActivity() {
 
-    private var allCurrencies = ArrayList<String>()
     var adapter = CurrencyAdapter(allCurrencies)
 
+    val service2 = RetrofitClientInstance2.retrofitInstance?.create(GetCurrencyService::class.java)
+
     override fun onCreate(savedInstanceState: Bundle?) {
+
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         val recycler = findViewById<RecyclerView>(R.id.list)
 
-        val service = RetrofitClientInstance.retrofitInstance?.create(GetCurrencyService::class.java)
-        val call = service?.getAllCurrencies()
-        call?.enqueue(object : Callback<CurrencyList> {
+        val thread = NameThread()
+        thread.start()
+        thread.join()
+//
+//        val priceThread = PriceThread()
+//        priceThread.start()
+//        priceThread.join()
 
-            override fun onResponse(call: Call<CurrencyList>, response: Response<CurrencyList>) {
-                Log.w(
-                    "gson => ",
-                    GsonBuilder().setPrettyPrinting().create().toJson(response)
-                )
-
-                val body = response.body()
-                val map = body!!.Data
-                val keys = map.keys
-
-                for (key in keys) {
-                    val value = map.getValue(key)
-
-                    val startIndexOfBracket = value.FullName.indexOf('(')
-                    val endIndexOfBracket = value.FullName.length
-                    val symbol = value.FullName.substring(startIndexOfBracket + 1, endIndexOfBracket - 1)
-
-                    println(value.FullName)
-                    println(symbol)
-                    allCurrencies.add(value.FullName)
-                }
-
-                recycler.layoutManager = LinearLayoutManager(this@MainActivity)
-                recycler.adapter = adapter
-                recycler.itemAnimator = DefaultItemAnimator()
-                recycler.setHasFixedSize(true)
-
-            }
-
-            override fun onFailure(call: Call<CurrencyList>, t: Throwable) {
-                Toast.makeText(applicationContext, "Error", Toast.LENGTH_LONG)
-
-            }
-        })
+        println("Hello" + allCurrencies.size)
+        recycler.layoutManager = LinearLayoutManager(this)
+        recycler.adapter = adapter
+        recycler.itemAnimator = DefaultItemAnimator()
+        recycler.setHasFixedSize(true)
 
     }
 
-//    class CurrencyAdapter(val currencies : List<String>, val itemLayout : Int) : RecyclerView.Adapter<CurrencyViewHolder>() {
-//        override fun getItemCount(): Int {
-//            return currencies.size
-//        }
-//
-//        override fun onBindViewHolder(holder: CurrencyViewHolder, position: Int) {
-//            var currency = currencies[position]
-//            holder.updateCurrency(currency)
-//        }
-//
-//        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CurrencyViewHolder {
-//            var view = LayoutInflater.from(parent.context).inflate(itemLayout, parent, false)
-//            return CurrencyViewHolder(view)
-//        }
-//    }
-//
-//    class CurrencyViewHolder(itemView : View) : RecyclerView.ViewHolder(itemView) {
-//        private var name : TextView?
-//
-////        private var value : TextView
-//
-//        init {
-//            name = itemView.findViewById(R.id.name)
-////            value = itemView.findViewById(R.id.value)
-//        }
-//
-//        fun updateCurrency(currency: String) {
-//            name?.text = currency
-//        }
-//    }
+    override fun onResume() {
+        super.onResume()
+        println("Hilow")
 
-    /*
-     get CAD value
-     for all cryptocoins {
-     val url = "https://min-api.cryptocompare.com/data/price?fsym=" + cryptoName + "&tsyms=CAD"
-     }
-      */
-
-
+    }
 
 }
+
+class NameThread : Thread() {
+    public override fun run() {
+        val service = RetrofitClientInstance.retrofitInstance?.create(GetCurrencyService::class.java)
+        val call = service?.getAllCurrencies()
+        val currencyList = call?.execute()?.body()
+
+        val map = currencyList!!.Data
+        val keys = map.keys
+
+        for (key in keys) {
+            val value = map.getValue(key)
+            val name = value.FullName
+            val startIndexOfBracket = name.indexOf('(')
+            val endIndexOfBracket = name.length
+            val symbol = name.substring(startIndexOfBracket + 1, endIndexOfBracket - 1)
+            val call = service?.getCadValue(symbol, CURRENCYTYPE)
+            val currencyValue = call?.execute()?.body()?.CAD
+            val currencyModel = CurrencyModel(name, currencyValue, false)
+            allCurrencies.add(currencyModel)
+        }
+
+    }
+
+}
+//
+//class PriceThread : Thread() {
+//    public override fun run() {
+//
+//        for (i in 1..5) {
+//            val currency = allCurrencies[i]
+//
+//            val service2 = RetrofitClientInstance.retrofitInstance?.create(GetCurrencyService::class.java)
+//            val call = service2?.getCadValue(currency.symbol, CURRENCYTYPE)
+//            val currencyValue = call?.execute()?.body()?.CAD
+//
+//            currency.price = currencyValue
+//        }
+//
+//    }
+//
+//}

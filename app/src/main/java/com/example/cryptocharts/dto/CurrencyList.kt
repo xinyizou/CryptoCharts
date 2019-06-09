@@ -7,4 +7,4 @@ import kotlin.jvm.internal.MagicApiIntrinsics
 
 data class CurrencyList(val Data: Map<String, CurrencyNameDTO>)
 
-data class CurrencyValue(val cad: Double)
+data class CurrencyValue(val CAD: Double)
