@@ -82,12 +82,12 @@ class NameThread : Thread() {
         for (key in keys) {
             val value = map.getValue(key)
             val name = value.FullName
-            val startIndexOfBracket = name.indexOf('(')
-            val endIndexOfBracket = name.length
-            val symbol = name.substring(startIndexOfBracket + 1, endIndexOfBracket - 1)
-            val call = service?.getCadValue(symbol, CURRENCYTYPE)
-            val currencyValue = call?.execute()?.body()?.CAD
-            val currencyModel = CurrencyModel(name, currencyValue, false)
+//            val startIndexOfBracket = name.indexOf('(')
+//            val endIndexOfBracket = name.length
+//            val symbol = name.substring(startIndexOfBracket + 1, endIndexOfBracket - 1)
+//            val call = service?.getCadValue(symbol, CURRENCYTYPE)
+//            val currencyValue = call?.execute()?.body()?.CAD
+            val currencyModel = CurrencyModel(name, 0.1, false)
             allCurrencies.add(currencyModel)
         }
 
