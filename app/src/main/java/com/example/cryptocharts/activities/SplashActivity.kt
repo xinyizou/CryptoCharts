@@ -1,9 +1,10 @@
-package com.example.cryptocharts
+package com.example.cryptocharts.activities
 
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.support.v7.app.AppCompatActivity
+import com.example.cryptocharts.R
 
 class SplashActivity : AppCompatActivity() {
     private val SPLASH_TIME_OUT:Long=3000 // 3 sec
@@ -13,12 +14,9 @@ class SplashActivity : AppCompatActivity() {
 
 
         Handler().postDelayed({
-            // This method will be executed once the timer is over
-            // Start your app main activity
 
             startActivity(Intent(this, MainActivity::class.java))
 
-            // close this activity
             finish()
         }, SPLASH_TIME_OUT)
     }
